@@ -1,0 +1,125 @@
+---
+title: "Math_Final_Project"
+author: "Mauricio Sanchez"
+date: "November 30, 2015"
+output: html_document
+---
+#Math –Final Project
+Objective: To use the hflights package or another large (greater than 100,000 observations and 20 variables) dataset
+of your choosing, pick two quantitative variables (e.g., Arrival Delay and Departure Delay). 
+
+#1
+Invoke the hflights package and display the head data of the entire data set.
+```{r}
+require (hflights);
+require(ggplot2);
+warning(FALSE);
+```
+
+#2
+Define one of these variables as the random variable X and the other as the random variable Y. One of these variables
+must be skewed to the right (positively)
+```{r, echo=TRUE}
+x <- hflights$ArrDelay;
+y <- hflights$DepDelay;
+
+summary(x);
+summary(y);
+
+# NAs = 3622 
+condTotal <- length(x) - 3622;
+condTotal;
+```
+
+#3
+I have chosen the Arrival Delay as the variable that is skewed to the right positively with mean greater than the median.
+```{r, echo=TRUE}
+ggplot(data = hflights) + geom_density(aes(x=hflights$ArrDelay), fill="blue") + ggtitle("Arrival Delay Density");
+```
+
+#4 Probability 
+Calculate as a minimum the below probabilities a through d. Assume the small letter "x" is
+estimated as the 3d quartile of the X variable, and the small letter "y" is estimated as the 2d quartile of
+the Y variable. Interpret the meaning of all probabilities. In addition, make a table of counts as shown
+below. a. P(X>x | Y>y) b. P(X>x, Y>y) c. P(X<x | Y>y) d. P(X<x | Y>y).
+
+x is estimated as the third quartile of the X variable -> 9
+y is estimated as the second quartile of Y variable -> 0
+
+```{r, echo=TRUE}
+#a P(X>x | Y>y)
+val1 <- nrow(subset(hflights, x > 9 & y > 0));
+val1;
+
+#condTotal = 223874
+(val1/condTotal)/0.5;
+0.25*0.50;
+
+#b. 
+val2 <- nrow(subset(hflights, x <= 9 & y > 0));
+val2;
+(val2/condTotal)/0.5;
+
+#c 
+val3 <- nrow(subset(hflights, x <= 9 & y <= 0));
+val3;
+(val3/condTotal)/0.5;
+
+#d
+val4 <- nrow(subset(hflights, x > 9 & y <= 0));
+val4;
+(val4/condTotal)/0.5;
+
+#table
+total1 <- sum(val2,val3);
+total2 <- sum(val4,val1);
+
+a <- c('<=3d quartile', '>3d quartile','Total');
+b <- c(val2,val3,(total1));
+c <- c(val4,val1,(total2));
+d <- c((val2+val4),(val3+val1),(total1+total2));
+levels <- factor(c("x/y","<=2d quartile",">2d quartile","Total"));
+resultsTbl <- data.frame('x/y'=a,
+                         '<=2d quartile'=b,
+                         '>2d quartile'=c,
+                         'Total'=d);
+resultsTbl;
+```
+
+Does P(A|B)=P(A)P(B)? 
+```{r, echo=TRUE}
+A = total2;
+B = total1;
+
+PA = A/condTotal;
+PB = B/condTotal;
+
+PA_B = PA/PB;
+PA_B == PA*PB;
+```
+
+Evaluate by running a Chi Square test for association on x and y. 
+```{r, echo=TRUE}
+chisq.test(x,y);
+```
+
+#5 Descriptive and Inferential Statistics
+Provide a scatterplot of the two variables x and y
+```{r, echo=TRUE}
+plot(x, y, xlab="Arrival Delays", ylab="Departure Delays", main="Arrival & Departure Delays", pch=2, cex.main=1.5, frame.plot=FALSE);
+```
+
+Provide a 95% CI for the difference in the mean of the variables x and y
+```{r, echo=TRUE}
+t.test(y,x);
+```
+
+Derive a correlation matrix for two of the quantitative variables you selected. Test the
+hypothesis that the correlation between these variables is 0 and provide a 99% confidence interval. Discuss the meaning of your analysis.
+```{r, echo=TRUE}
+data <- data.frame(x,y);
+matrix <- cor(data);
+cor.test(y,x,conf.level=0.99);
+```
+This above shows 95% confidence that the difference in the means of x and y will be between 2.176342 and 2.524892. I conclude that correlation may exist based on the 99 percent confidence value. True correlation is not equal to 0. 
+
