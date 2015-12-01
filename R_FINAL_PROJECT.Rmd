@@ -1,0 +1,85 @@
+---
+title: "R_Final_Project"
+author: "Mauricio Sanchez"
+date: "November 29, 2015"
+output: html_document
+---
+#R Bridge –Final Project
+Objective: To analyze a subset of the hflights data to draw a parallel between airlines that have the least and the most delays. This will help one make an intelligent decision when choosing airlines flying out of Houston airports.
+
+#1
+Invoke the hflights package and display the head data of the entire data set.
+```{r}
+require (hflights);
+require(ggplot2);
+require(sqldf);
+warning(FALSE);
+```
+
+#2
+Format Date
+```{r, echo=TRUE}
+formatdate <- paste(hflights$Month, hflights$DayofMonth, hflights$Year, sep="-");
+hflights$Date <- formatdate;
+hflights$Date <- as.Date(formatdate, "%m-%d-%Y");
+```
+
+#3
+Translate Week Days
+```{r, echo=TRUE}
+hflights$DayOfWeek <- sub(1, 'Monday', hflights$DayOfWeek)
+hflights$DayOfWeek <- sub(2, 'Tuesday', hflights$DayOfWeek)
+hflights$DayOfWeek <- sub(3, 'Wednesday', hflights$DayOfWeek)
+hflights$DayOfWeek <- sub(4, 'Thursday', hflights$DayOfWeek)
+hflights$DayOfWeek <- sub(5, 'Friday', hflights$DayOfWeek)
+hflights$DayOfWeek <- sub(6, 'Saturday', hflights$DayOfWeek)
+hflights$DayOfWeek <- sub(7, 'Sunday', hflights$DayOfWeek)
+```
+
+#3
+Quick Snapshot of the Data
+```{r, echo=TRUE}
+head(hflights);
+```
+
+#4
+Choose a subset of the data.
+```{r, echo=TRUE}
+dd1 <- sqldf("SELECT UniqueCarrier, COUNT(ArrDelay) AS ArrivalDelays FROM hflights WHERE ArrDelay > 0 GROUP BY UniqueCarrier ORDER BY 2 DESC");
+dd2 <- sqldf("SELECT UniqueCarrier, COUNT(Distance) AS Flights FROM hflights WHERE Distance > 0 GROUP BY UniqueCarrier ORDER BY UniqueCarrier ASC");
+dd3 <- merge(dd1, dd2, by="UniqueCarrier");
+dd3["Ratio"] <- round(((dd3$ArrivalDelays/dd3$Flights)*100), digits=0);
+```
+
+#5
+Show Arrival Delays by Airline. 
+```{r, echo=FALSE}
+print(dd3);
+```
+
+#6
+The airline with the highest ratio of arrival delays is Frontier Flight (F9). The airline with the lowest arrival delays is American Airlines (AA).
+```{r, echo=FALSE}
+ggplot(hflights, aes(x = UniqueCarrier, y = ArrDelay)) + geom_boxplot() + ggtitle("Arrival Delays by Airline");
+ggplot(data=dd3) + geom_bar(aes(x=Ratio), bin=5) + ggtitle("Arrival Delay Ratio");
+ggplot(data = dd3) + geom_density(aes(x=ArrivalDelays), fill="grey50") + ggtitle("Arrival Delay Density");
+```
+
+#7
+Let's look at the number of flights vs. delay ratio. This graph clearly shows the airlines with the highest and lowest ratio of arrival delays. 
+```{r, echo=FALSE, warning=FALSE}
+qplot(data=dd3, Flights, Ratio, color = UniqueCarrier) + facet_grid(~UniqueCarrier) + ggtitle("Arrival Delay Ratio by Airline");
+```
+
+#8 
+Let's analyze arrival delays by day of the week. This graph suggest that there is a correlation between departure and arrival delays increasing the delays as the number of flights increase. This could be caused as a result that the days when there are more fligths there are more delays in departures and arrivals. 
+```{r, echo=FALSE, warning=FALSE}
+qplot(data=hflights, ArrDelay, DepDelay, color = UniqueCarrier) + facet_grid(~DayOfWeek) + ggtitle("Arrival vs. Departure Delays by WeekDay");
+```
+
+#9 Questions
+1. What are the days with the least amount of departure and arrival delays? Tuesdays and Thursdays are the days with the least amount of delays.
+
+2. What is the best airline to fly with the least amount of arrival delays? I would choose American Airlines to fly into Houston.
+
+3. What days would you avoid flying in or out of the houston airports? I would totally avoid the weekends to fly in or out of Houston. The number of flights increase on weekends and therefore the number of delays.
