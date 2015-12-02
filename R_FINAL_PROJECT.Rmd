@@ -53,27 +53,27 @@ dd3["Ratio"] <- round(((dd3$ArrivalDelays/dd3$Flights)*100), digits=0);
 
 #5
 Show Arrival Delays by Airline. 
-```{r, echo=FALSE}
+```{r, echo=TRUE}
 print(dd3);
 ```
 
 #6
-The airline with the highest ratio of arrival delays is Frontier Flight (F9). The airline with the lowest arrival delays is American Airlines (AA).
-```{r, echo=FALSE}
-ggplot(hflights, aes(x = UniqueCarrier, y = ArrDelay)) + geom_boxplot() + ggtitle("Arrival Delays by Airline");
-ggplot(data=dd3) + geom_bar(aes(x=Ratio), bin=5) + ggtitle("Arrival Delay Ratio");
+The airline with the highest ratio of arrival delays is Frontier Flight (F9) with a 55 percent delay ratio. The airline with the lowest arrival delays is American Airlines (AA) with 30 percent.
+```{r, echo=TRUE}
+ggplot(hflights, aes(x = UniqueCarrier, y = ArrDelay)) + geom_boxplot() + ggtitle("Arrival Delays by Airline by Number of Flights");
 ggplot(data = dd3) + geom_density(aes(x=ArrivalDelays), fill="grey50") + ggtitle("Arrival Delay Density");
+ggplot(data=dd3) + geom_bar(aes(x=Ratio), bin=5) + ggtitle("Arrival Delay Ratio");
 ```
 
 #7
 Let's look at the number of flights vs. delay ratio. This graph clearly shows the airlines with the highest and lowest ratio of arrival delays. 
-```{r, echo=FALSE, warning=FALSE}
+```{r, echo=TRUE, warning=TRUE}
 qplot(data=dd3, Flights, Ratio, color = UniqueCarrier) + facet_grid(~UniqueCarrier) + ggtitle("Arrival Delay Ratio by Airline");
 ```
 
 #8 
 Let's analyze arrival delays by day of the week. This graph suggest that there is a correlation between departure and arrival delays increasing the delays as the number of flights increase. This could be caused as a result that the days when there are more fligths there are more delays in departures and arrivals. 
-```{r, echo=FALSE, warning=FALSE}
+```{r, echo=TRUE, warning=FALSE}
 qplot(data=hflights, ArrDelay, DepDelay, color = UniqueCarrier) + facet_grid(~DayOfWeek) + ggtitle("Arrival vs. Departure Delays by WeekDay");
 ```
 
